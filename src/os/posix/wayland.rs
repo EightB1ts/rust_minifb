@@ -237,6 +237,8 @@ impl DisplayInfo {
         let compositor = globals.instantiate_exact::<WlCompositor>(4).map_err(|e| {
             Error::WindowCreate(format!("Failed to retrieve the compositor: {:?}", e))
         })?;
+
+        
         let shm = globals
             .instantiate_exact::<WlShm>(1)
             .map_err(|e| Error::WindowCreate(format!("Failed to create shared memory: {:?}", e)))?;
@@ -485,6 +487,8 @@ pub struct Window {
     bg_color: u32,
     scale_mode: ScaleMode,
 
+    hittest: bool,
+
     mouse_x: f32,
     mouse_y: f32,
     scroll_x: f32,
@@ -581,6 +585,8 @@ impl Window {
             scroll_y: 0.,
             buttons: [false; 8],
             prev_cursor: CursorStyle::Arrow,
+
+            hittest: opts.hittest,
 
             should_close: false,
             active: false,
@@ -793,6 +799,8 @@ impl Window {
         if *self.toplevel_info.1.borrow() {
             self.should_close = true;
         }
+
+        if !self.hittest { return; }
 
         for event in self.input.iter_keyboard_events() {
             use wayland_client::protocol::wl_keyboard::Event;
