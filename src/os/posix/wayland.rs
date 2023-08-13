@@ -238,7 +238,7 @@ impl DisplayInfo {
             Error::WindowCreate(format!("Failed to retrieve the compositor: {:?}", e))
         })?;
 
-        
+
         let shm = globals
             .instantiate_exact::<WlShm>(1)
             .map_err(|e| Error::WindowCreate(format!("Failed to create shared memory: {:?}", e)))?;
@@ -340,6 +340,8 @@ impl DisplayInfo {
 
         let cursor = wayland_cursor::CursorTheme::load(16, &shm);
         let cursor_surface = compositor.create_surface();
+
+        if !hittest { cursor_surface.set_input_region(None); }
 
         Ok((
             Self {
