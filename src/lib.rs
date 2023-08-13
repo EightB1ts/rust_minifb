@@ -205,6 +205,7 @@ pub struct WindowOptions {
     /// Required for transparency on windows.
     /// Should be mutually exclusive to resize, automatically assumes borderless.
     /// Not supported on OSX.
+    pub hittest: bool,
     pub none: bool,
 }
 
@@ -1108,6 +1109,7 @@ impl Default for WindowOptions {
             scale: Scale::X1,
             scale_mode: ScaleMode::Stretch,
             topmost: false,
+            hittest: true,
             none: false,
         }
     }

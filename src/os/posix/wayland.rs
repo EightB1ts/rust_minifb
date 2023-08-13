@@ -212,7 +212,7 @@ struct DisplayInfo {
 impl DisplayInfo {
     /// Accepts the size of the surface to be created, whether or not the alpha channel will be
     /// rendered, and whether or not server-side decorations will be used.
-    fn new(size: (i32, i32), alpha: bool, decorate: bool) -> Result<(Self, WaylandInput)> {
+    fn new(size: (i32, i32), alpha: bool, decorate: bool, hittest: bool) -> Result<(Self, WaylandInput)> {
         // Get the wayland display
         let display = Display::connect_to_env().map_err(|e| {
             Error::WindowCreate(format!("Failed to connect to the Wayland display: {:?}", e))
@@ -249,6 +249,10 @@ impl DisplayInfo {
         } else {
             Format::Xrgb8888
         };
+
+        if !hittest {
+            surface.set_input_region(None);
+        }
 
         // Retrive shm buffer for writing
         let mut buf_pool = BufferPool::new(shm.clone(), format);
@@ -528,6 +532,7 @@ impl Window {
             (width as i32 * scale, height as i32 * scale),
             opts.transparency,
             !opts.borderless || opts.none,
+            opts.hittest
         )?;
 
         if opts.title {
