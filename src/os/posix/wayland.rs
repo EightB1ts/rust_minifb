@@ -24,7 +24,7 @@ use wayland_client::protocol::wl_seat::WlSeat;
 use wayland_client::protocol::wl_shm::{Format, WlShm};
 use wayland_client::protocol::wl_shm_pool::WlShmPool;
 use wayland_client::protocol::wl_surface::WlSurface;
-use wayland_client::protocol::{wl_keyboard, wl_pointer};
+use wayland_client::protocol::{wl_keyboard, wl_pointer, wl_region};
 use wayland_client::{Attached, Display, EventQueue, GlobalManager, Main};
 use wayland_protocols::unstable::xdg_decoration::v1::client::zxdg_decoration_manager_v1::ZxdgDecorationManagerV1;
 use wayland_protocols::xdg_shell::client::xdg_surface::XdgSurface;
@@ -252,10 +252,6 @@ impl DisplayInfo {
             Format::Xrgb8888
         };
 
-        if !hittest {
-            surface.set_input_region(None);
-        }
-
         // Retrive shm buffer for writing
         let mut buf_pool = BufferPool::new(shm.clone(), format);
         let (mut tempfile, buffer) = buf_pool
@@ -341,7 +337,14 @@ impl DisplayInfo {
         let cursor = wayland_cursor::CursorTheme::load(16, &shm);
         let cursor_surface = compositor.create_surface();
 
-        if !hittest { cursor_surface.set_input_region(None); }
+        if !hittest { 
+
+            let region = compositor.create_region();
+            region.add(0, 0, 0, 0);
+            
+            cursor_surface.set_input_region(Some(&region));
+            surface.set_input_region(Some(&region));
+        }
 
         Ok((
             Self {
@@ -801,8 +804,6 @@ impl Window {
         if *self.toplevel_info.1.borrow() {
             self.should_close = true;
         }
-
-        if !self.hittest { return; }
 
         for event in self.input.iter_keyboard_events() {
             use wayland_client::protocol::wl_keyboard::Event;
